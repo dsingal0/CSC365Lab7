@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="jdbc:mysql://db.labthreesixfive.com/maichour?autoReconnect=true\&amp;useSSL=false" uuid="7e6fb311-47a7-4220-ba57-bf66245e65f8">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://db.labthreesixfive.com/maichour?autoReconnect=true\&amp;useSSL=false</jdbc-url>
+    </data-source>
+  </component>
+</project>
