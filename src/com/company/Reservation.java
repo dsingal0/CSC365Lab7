@@ -15,6 +15,7 @@ public class Reservation {
     public float coast;
     public String bed;
 
+
     public Reservation() {
         this.code = -1;
         this.room = "";
