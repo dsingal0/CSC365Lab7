@@ -1,0 +1,268 @@
+FR1: 
+-- rooms sorted by popularity desc  
+-- popularity = occupany for the last 180 days  
+-- replace '2010-10-23' with curdate()
+WITH threemonthoverlap 
+     AS (SELECT code, 
+                room, 
+                rate, 
+                checkin, 
+                checkout, 
+                Least(Datediff(checkout, checkin), 
+                Datediff(checkout, Date_sub('2010-10-23', 
+                                   interval 180 day)), 
+                Datediff('2010-10-23', checkin), 
+                Datediff('2010-10-23', Date_sub('2010-10-23', 
+                                       interval 180 day))) AS 
+                overlap 
+         FROM   reservations res 
+         WHERE  checkin <= '2010-10-23' 
+                AND checkout >= Date_sub('2010-10-23', interval 180 day)), 
+     roompopularity 
+     AS (SELECT room, 
+                Round(SUM(overlap) / 180, 2) AS popularity 
+         FROM   threemonthoverlap t 
+         GROUP  BY room), 
+     roomavailability 
+     AS (SELECT room, 
+                Greatest('2010-10-23', Max(checkout)) AS nextAvailable 
+         FROM   reservations res 
+         WHERE  checkin <= '2010-10-23' 
+                AND checkout >= Date_sub('2010-10-23', interval 180 day) 
+         GROUP  BY room), 
+     latestduration 
+     AS (SELECT room, 
+                Datediff(Max(checkout), Max(checkin)) AS duration 
+         FROM   reservations res 
+         GROUP  BY room) 
+SELECT rp.room, 
+       popularity, 
+       nextavailable, 
+       duration 
+FROM   roompopularity rp 
+       inner join roomavailability ra 
+               ON rp.room = ra.room 
+       inner join latestduration ld 
+               ON ld.room = ra.room 
+ORDER  BY popularity DESC;
+FR2:
+-- find rooms by totalCapacity 
+-- replace 2 with number of adults and 
+-- 1 with number of children 
+-- room, bed type, beginDate, endDate 
+-- when passing in the roomcode and decor, pass them as '%' if Any 
+-- replace '2010-10-23' with startDate and '2010-10-25' with endDate 
+-- for the insert statement to add a reservation, have the new reservation code be maxResCode, which is the last column of the returned table from the query +1. Therefore,
+-- rescode of new reservation = maxRescode+1
+WITH bigenoughrooms AS (
+  (
+    SELECT 
+      roomcode, 
+      roomname, 
+      baseprice, 
+      decor, 
+      bedtype 
+    FROM 
+      rooms r 
+    WHERE 
+      r.maxocc >= (2 + 1)
+  )
+), 
+decorcoderooms AS (
+  SELECT 
+    roomcode 
+  FROM 
+    bigenoughrooms 
+  WHERE 
+    roomcode LIKE '%' 
+    OR decor LIKE '%'
+), 
+alloverlap AS (
+  SELECT 
+    roomcode, 
+    roomname, 
+    checkin, 
+    checkout, 
+    baseprice, 
+    Least(
+      Datediff(checkout, checkin), 
+      Datediff(checkout, '2010-10-23'), 
+      Datediff('2010-10-25', checkin), 
+      Datediff('2010-10-25', '2010-10-23')
+    ) AS overlap 
+  FROM 
+    bigenoughrooms b 
+    INNER JOIN reservations res ON res.room = b.roomcode
+), 
+roomoverlap AS (
+  SELECT 
+    roomcode, 
+    roomname, 
+    baseprice, 
+    Max(
+      Least(
+        Datediff(checkout, checkin), 
+        Datediff(checkout, '2010-10-23'), 
+        Datediff('2010-10-25', checkin), 
+        Datediff('2010-10-25', '2010-10-23')
+      )
+    ) AS overlap 
+  FROM 
+    bigenoughrooms b 
+    INNER JOIN reservations res ON res.room = b.roomcode 
+  GROUP BY 
+    roomcode
+), 
+idealrooms AS (
+  SELECT 
+    r.roomcode, 
+    r.roomname, 
+    r.baseprice, 
+    '2010-10-23' AS startdate, 
+    '2010-10-25' AS enddate 
+  FROM 
+    decorcoderooms d 
+    INNER JOIN roomoverlap r ON r.roomcode = d.roomcode 
+  WHERE 
+    overlap <= 0
+), 
+nonidealroomsnooverlap AS (
+  SELECT 
+    r.roomcode, 
+    r.roomname, 
+    r.baseprice, 
+    '2010-10-23' AS startdate, 
+    '2010-10-25' AS enddate 
+  FROM 
+    bigenoughrooms b 
+    INNER JOIN roomoverlap r ON r.roomcode = b.roomcode 
+  WHERE 
+    overlap <= 0
+) (
+  SELECT 
+    *, 
+    (
+      select 
+        max(code) 
+      from 
+        reservations
+    ) as maxResCode 
+  FROM 
+    idealrooms
+) 
+UNION ALL 
+  (
+    SELECT 
+      *, 
+      (
+        select 
+          max(code) 
+        from 
+          reservations
+      ) as maxResCode 
+    FROM 
+      nonidealroomsnooverlap
+  ) 
+UNION ALL 
+  (
+    SELECT 
+      roomcode, 
+      roomname, 
+      baseprice, 
+      Max(checkout) AS startdate, 
+      date_add(
+        Max(checkout), 
+        interval datediff('2010-10-25', '2010-10-23') day
+      ) AS enddate, 
+      (
+        select 
+          max(code) 
+        from 
+          reservations
+      ) as maxResCode 
+    FROM 
+      bigenoughrooms b 
+      INNER JOIN reservations r ON r.room = b.roomcode 
+    GROUP BY 
+      roomcode
+  ) 
+limit 
+  5;
+
+Insert statement sample
+insert into reservations value (
+  'Dhruv', 
+  'Singal', 
+  'AOB', 
+  'Abscond or bolster', 
+  'Queen', 
+  '2010-10-23', 
+  '2010-10-25', 
+  2, 
+  2, 
+  1.18 *(
+    numWeekdays * baseprice + numWeekends * baseprice * 1.1
+  )
+);
+
+
+
+
+
+
+
+
+
+
+
+
+FR3: 
+-- First query for the roomcode.
+-- Then check which attributes they’re changing. For attributes with NO_CHANGE, remove them from the update query.
+-- If they decide to change the dates, run the first query to check if there are any conflicts. It should return an empty tuple if there aren’t any conflicts, after which you can go ahead and run query 2.
+-- in case they change dates
+select 
+  * 
+from 
+  reservations r 
+where 
+  room =(
+    select 
+      room 
+    from 
+      reservations rt 
+    where 
+      rt.code = 99863
+  ) 
+  and checkin < (
+    select 
+      checkout 
+    from 
+      reservations rt 
+    where 
+      rt.code = 99863
+  ) 
+  AND checkout >= (
+    select 
+      checkin 
+    from 
+      reservations rt 
+    where 
+      rt.code = 99863
+  ) 
+  and code <> 99863;
+-- update table with new data
+update 
+  reservations 
+set 
+  firstname = 'Dhruv', 
+  lastname = 'Singal', 
+  checkin = '2010-10-23', 
+  checkout = '2010-10-25', 
+  kids = 2, 
+  adults = 2 
+where 
+  code = 99863;
+
+
+
