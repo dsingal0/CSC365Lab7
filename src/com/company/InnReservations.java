@@ -106,7 +106,7 @@ public class InnReservations {
                 "      left outer join RoomPopularity rp\n" +
                 "              ON rp.room = rooms.roomCode\n" +
                 "      left outer join RoomAvailability ra\n" +
-                "              ON rooms.roomId = ra.room\n" +
+                "              ON rooms.roomCode = ra.room\n" +
                 "      left outer join LatestDuration ld\n" +
                 "              ON ld.room = rooms.roomCode\n" +
                 "ORDER  BY popularity DESC;";
