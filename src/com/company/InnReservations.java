@@ -67,15 +67,15 @@ public class InnReservations {
                 "               checkin,\n" +
                 "               checkout,\n" +
                 "               Least(Datediff(checkout, checkin),\n" +
-                "               Datediff(checkout, Date_sub('2010-10-23',\n" +
+                "               Datediff(checkout, Date_sub(curdate(),\n" +
                 "                                  interval 180 day)),\n" +
-                "               Datediff('2010-10-23', checkin),\n" +
-                "               Datediff('2010-10-23', Date_sub('2010-10-23',\n" +
+                "               Datediff(curdate(), checkin),\n" +
+                "               Datediff(curdate(), Date_sub(curdate(),\n" +
                 "                                      interval 180 day))) AS\n" +
                 "               overlap\n" +
                 "        FROM   reservations res\n" +
-                "        WHERE  checkin <= '2010-10-23'\n" +
-                "               AND checkout >= Date_sub('2010-10-23', interval 180 day)),\n" +
+                "        WHERE  checkin <= curdate()\n" +
+                "               AND checkout >= Date_sub(curdate(), interval 180 day)),\n" +
                 "    RoomPopularity\n" +
                 "    AS (SELECT room,\n" +
                 "               Round(SUM(overlap) / 180, 2) AS popularity\n" +
@@ -83,10 +83,10 @@ public class InnReservations {
                 "        GROUP  BY room),\n" +
                 "    RoomAvailability\n" +
                 "    AS (SELECT room,\n" +
-                "               Greatest('2010-10-23', Max(checkout)) AS nextAvailableCheckin\n" +
+                "               Greatest(curdate(), Max(checkout)) AS nextAvailableCheckin\n" +
                 "        FROM   reservations res\n" +
-                "        WHERE  checkin <= '2010-10-23'\n" +
-                "               AND checkout >= Date_sub('2010-10-23', interval 180 day)\n" +
+                "        WHERE  checkin <= curdate()\n" +
+                "               AND checkout >= Date_sub(curdate(), interval 180 day)\n" +
                 "        GROUP  BY room),\n" +
                 "    LatestDuration\n" +
                 "    AS (SELECT room,\n" +
