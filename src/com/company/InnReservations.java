@@ -95,7 +95,7 @@ public class InnReservations {
                 "      roomName,\n" +
                 "      beds,\n" +
                 "      bedType,\n" +
-                "      maxOccupancy,\n" +
+                "      maxOcc,\n" +
                 "      basePrice,\n" +
                 "      decor,\n" +
                 "      IFNULL(popularity, 0) as popularity,\n" +
@@ -125,7 +125,7 @@ public class InnReservations {
                     String RoomName = rs.getString("roomName");
                     int roomBeds = rs.getInt("beds");
                     String bedType = rs.getString("bedType");
-                    int maxOccupancy = rs.getInt("maxOccupancy");
+                    int maxOccupancy = rs.getInt("maxOcc");
                     float basePrice = rs.getFloat("basePrice");
                     String decor = rs.getString("decor");
                     float popularity = rs.getFloat("popularity");
