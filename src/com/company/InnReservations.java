@@ -135,7 +135,7 @@ public class InnReservations {
 
                     Rooms room = new Rooms(roomCode, RoomName, roomBeds, bedType, maxOccupancy, basePrice, decor);
 
-                    System.out.printf("%s\t%-25s%d\t%s\t%d\t%.2f\t%-15s%.2f\t\t%tF\t%d\t\t%tF\n",
+                    System.out.printf("%s\t\t%-25s%d\t%s\t%d\t%.2f\t%-15s%.2f\t\t%tF\t%d\t\t%tF\n",
                             room.getRoomCode(),
                             room.getRoomName(),
                             room.getBeds(),
