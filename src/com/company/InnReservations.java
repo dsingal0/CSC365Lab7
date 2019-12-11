@@ -88,11 +88,11 @@ public class InnReservations {
             try(Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sql)){
                 while (rs.next()){
-                    String RoomCode = rs.getString("RoomCode");
-                    String RoomName = rs.getString("RoomName");
+                    String RoomCode = rs.getString("RoomId");
+                    String RoomName = rs.getString("roomName");
                     int roomBeds = rs.getInt("Beds");
                     String BedType = rs.getString("bedType");
-                    int MaxOccu = rs.getInt("maxOcc");
+                    int MaxOccu = rs.getInt("maxOccupancy");
                     float basePrice = rs.getFloat("basePrice");
                     String Decor = rs.getString("decor");
 
