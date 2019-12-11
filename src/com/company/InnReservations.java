@@ -58,53 +58,99 @@ public class InnReservations {
         }
     }
 
-    /*
-    (Connection conn = DriverManager.getConnection("jdbc:mysql://db.labthreesixfive.com/maichour?autoReconnect=true\\&useSSL=false",
-                "maichour",
-               "CSC365-F2019_014396846"))
-
-
-    try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
-                                                      System.getenv("APP_JDBC_USER"),
-                                                      System.getenv("APP_JDBC_PW")))
-     */
-
     private static void requirement1() {
-        String sql = "select * from rooms";
-        System.out.println();
-        System.out.println(System.getenv("APP_JDBC_URL"));
-        System.out.println(System.getenv("APP_JDBC_USER"));
-        System.out.println(System.getenv("APP_JDBC_PW"));
-        System.out.println();
+        String sqlStatement =
+                "WITH ThreeMonthOverlap\n" +
+                "    AS (SELECT code,\n" +
+                "               room,\n" +
+                "               rate,\n" +
+                "               checkin,\n" +
+                "               checkout,\n" +
+                "               Least(Datediff(checkout, checkin),\n" +
+                "               Datediff(checkout, Date_sub('2010-10-23',\n" +
+                "                                  interval 180 day)),\n" +
+                "               Datediff('2010-10-23', checkin),\n" +
+                "               Datediff('2010-10-23', Date_sub('2010-10-23',\n" +
+                "                                      interval 180 day))) AS\n" +
+                "               overlap\n" +
+                "        FROM   reservations res\n" +
+                "        WHERE  checkin <= '2010-10-23'\n" +
+                "               AND checkout >= Date_sub('2010-10-23', interval 180 day)),\n" +
+                "    RoomPopularity\n" +
+                "    AS (SELECT room,\n" +
+                "               Round(SUM(overlap) / 180, 2) AS popularity\n" +
+                "        FROM   ThreeMonthOverlap t\n" +
+                "        GROUP  BY room),\n" +
+                "    RoomAvailability\n" +
+                "    AS (SELECT room,\n" +
+                "               Greatest('2010-10-23', Max(checkout)) AS nextAvailableCheckin\n" +
+                "        FROM   reservations res\n" +
+                "        WHERE  checkin <= '2010-10-23'\n" +
+                "               AND checkout >= Date_sub('2010-10-23', interval 180 day)\n" +
+                "        GROUP  BY room),\n" +
+                "    LatestDuration\n" +
+                "    AS (SELECT room,\n" +
+                "               Max(checkout) as lastCheckout,\n" +
+                "               Datediff(Max(checkout), Max(checkin)) AS latestDuration\n" +
+                "        FROM   reservations res\n" +
+                "        GROUP  BY room)\n" +
+                "SELECT roomId,\n" +
+                "      roomName,\n" +
+                "      beds,\n" +
+                "      bedType,\n" +
+                "      maxOccupancy,\n" +
+                "      basePrice,\n" +
+                "      decor,\n" +
+                "      popularity,\n" +
+                "      nextAvailableCheckin,\n" +
+                "      latestDuration as lastStayLength,\n" +
+                "      lastCheckout\n" +
+                "FROM  RoomPopularity rp\n" +
+                "      inner join rooms\n" +
+                "              ON rp.room = rooms.roomId\n" +
+                "      inner join RoomAvailability ra\n" +
+                "              ON rp.room = ra.room\n" +
+                "      inner join LatestDuration ld\n" +
+                "              ON ld.room = ra.room\n" +
+                "ORDER  BY popularity DESC;";
 
-        System.out.println("RoomCode\tRoomName\tBeds\tbedType\tMaxOccup\tbasePrice\tdecor\t");
-
-
+        System.out.println("RoomId\tRoomName\tBeds\tBedType\tMaxOccupancy\tBasePrice\tDecor\tPopularity\tNextAvailableCheckin\tLastStayLength\tLastCheckout");
 
         try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
                 System.getenv("APP_JDBC_USER"),
                 System.getenv("APP_JDBC_PW"))) {
 
             try(Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)){
+                ResultSet rs = stmt.executeQuery(sqlStatement)){
                 while (rs.next()){
-                    String RoomCode = rs.getString("RoomId");
-                    String RoomName = rs.getString("roomName");
-                    int roomBeds = rs.getInt("Beds");
-                    String BedType = rs.getString("bedType");
-                    int MaxOccu = rs.getInt("maxOccupancy");
-                    float basePrice = rs.getFloat("basePrice");
-                    String Decor = rs.getString("decor");
+                    System.out.println("RoomId\tRoomName\tBeds\tBedType\tMaxOccupancy\tBasePrice\tDecor\tPopularity\tNextAvailableCheckin\tLastStayLength\tLastCheckout");
 
-                    Rooms room = new Rooms(RoomCode,RoomName,roomBeds,BedType,MaxOccu,basePrice,Decor);
-                    System.out.printf("%s\t%s\t%d\t%s\t%d\t%.2f\t%s",
+                    String roomCode = rs.getString("roomId");
+                    String RoomName = rs.getString("roomName");
+                    int roomBeds = rs.getInt("beds");
+                    String bedType = rs.getString("bedType");
+                    int maxOccupancy = rs.getInt("maxOccupancy");
+                    float basePrice = rs.getFloat("basePrice");
+                    String decor = rs.getString("decor");
+                    float popularity = rs.getFloat("popularity");
+                    Date nextDate = rs.getDate("nextAvailableCheckin");
+                    int lastStayDuration = rs.getInt("lastStayLength");
+                    Date lastCheckout = rs.getDate("lastCheckout");
+
+                    Rooms room = new Rooms(roomCode, RoomName, roomBeds, bedType, maxOccupancy, basePrice, decor);
+
+                    System.out.printf("%s\t%s\t%d\t%s\t%d\t%.2f\t%s\t%.2f\t%tD\t%d\t%tD\n",
                             room.getRoomCode(),
                             room.getRoomName(),
                             room.getBeds(),
                             room.getBedType(),
                             room.getMaxOcc(),
                             room.getBasePrice(),
-                            room.getDecor());
+                            room.getDecor(),
+                            popularity,
+                            nextDate,
+                            lastStayDuration,
+                            lastCheckout);
                 }
             }catch (SQLException e){
                 e.printStackTrace();
