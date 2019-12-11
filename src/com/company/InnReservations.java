@@ -36,7 +36,7 @@ public class InnReservations {
                     break;
                 case 2:
                     System.out.println("Make a Reservation");
-                    Requirement2();
+                    requirement2();
                     break;
                 case 3:
                     System.out.println("Change Reservation");
@@ -72,7 +72,7 @@ public class InnReservations {
                 "               Datediff(curdate(), Date_sub(curdate(),\n" +
                 "                                      interval 180 day))) AS\n" +
                 "               overlap\n" +
-                "        FROM   reservations res\n" +
+                "        FROM   lab7_reservations res\n" +
                 "        WHERE  checkin <= curdate()\n" +
                 "               AND checkout >= Date_sub(curdate(), interval 180 day)),\n" +
                 "    RoomPopularity\n" +
@@ -83,13 +83,13 @@ public class InnReservations {
                 "    RoomAvailability\n" +
                 "    AS (SELECT room,\n" +
                 "               Greatest(curdate(), Max(checkout)) AS nextAvailableCheckin\n" +
-                "        FROM   reservations res\n" +
+                "        FROM   lab7_reservations res\n" +
                 "        GROUP  BY room),\n" +
                 "    LatestDuration\n" +
                 "    AS (SELECT room,\n" +
                 "               Max(checkout) as lastCheckout,\n" +
                 "               Datediff(Max(checkout), Max(checkin)) AS latestDuration\n" +
-                "        FROM   reservations res\n" +
+                "        FROM   lab7_reservations res\n" +
                 "        GROUP  BY room)\n" +
                 "SELECT roomId,\n" +
                 "      roomName,\n" +
@@ -102,7 +102,7 @@ public class InnReservations {
                 "      nextAvailableCheckin,\n" +
                 "      latestDuration as lastStayLength,\n" +
                 "      lastCheckout as lastCheckout\n" +
-                "FROM  rooms\n" +
+                "FROM  lab7_rooms rooms\n" +
                 "      left outer join RoomPopularity rp\n" +
                 "              ON rp.room = rooms.roomId\n" +
                 "      left outer join RoomAvailability ra\n" +
@@ -175,16 +175,138 @@ public class InnReservations {
     /* Requirement 2
      * Reservation Creation
      */
-    public static Reservation Requirement2(){
+    public static void requirement2(){
+        System.out.println("Make a Reservation: ");
+
+        Reservation res = getRequirement2Inputs();
+
+        if (res == null) {
+            return;
+        }
+
+        /*
+        -- find rooms by totalCapacity
+                -- replace 2 with number of adults and
+                -- 1 with number of children
+        -- room, bed type, beginDate, endDate
+                -- when passing in the roomcode and decor, pass them as '%' if Any
+                -- replace '2010-10-23' with startDate and '2010-10-25' with endDate
+        -- for the insert statement to add a reservation, have the new reservation code be maxResCode, which is the last column of the returned table from the query +1. Therefore,
+                -- rescode of new reservation = maxRescode+1*/
+
+        try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW"))) {
+
+            // First is num adults
+            // Second is num children
+            // Third is roomcode (pass as a string or '%' for any)
+            // Fourth is decor (pass as a string or '%' for any)
+            // Fifth is startDate
+            // Sixth is endDate
+            // enddate
+            // startdate
+            // startdate
+            // enddate
+            // enddate
+            // startdate
+            // startdate
+            // enddate
+
+            PreparedStatement statement = conn.prepareStatement("WITH bigenoughrooms AS ( \n" +
+                    "( \n" +
+                    "       SELECT roomcode, \n" +
+                    "              roomname, \n" +
+                    "              baseprice, \n" +
+                    "              decor, \n" +
+                    "              bedtype \n" +
+                    "       FROM   rooms r \n" +
+                    "       WHERE  r.maxocc >= (? + ?) ) ), decorcoderooms AS \n" +
+                    "( \n" +
+                    "       SELECT roomcode \n" +
+                    "       FROM   bigenoughrooms \n" +
+                    "       WHERE  roomcode LIKE ? \n" +
+                    "       OR     decor LIKE ? ), alloverlap AS \n" +
+                    "( \n" +
+                    "           SELECT     roomcode, \n" +
+                    "                      roomname, \n" +
+                    "                      checkin, \n" +
+                    "                      checkout, \n" +
+                    "                      baseprice, \n" +
+                    "                      Least( Datediff(checkout, checkin), Datediff(checkout, ?), Datediff(?, checkin), Datediff(?, ?) ) AS overlap \n" +
+                    "           FROM       bigenoughrooms b \n" +
+                    "           INNER JOIN reservations res \n" +
+                    "           ON         res.room = b.roomcode ), roomoverlap AS \n" +
+                    "( \n" +
+                    "           SELECT     roomcode, \n" +
+                    "                      roomname, \n" +
+                    "                      baseprice, \n" +
+                    "                      Max( Least( Datediff(checkout, checkin), Datediff(checkout, ?), Datediff(?, checkin), Datediff(?, ?) ) ) AS overlap \n" +
+                    "           FROM       bigenoughrooms b \n" +
+                    "           INNER JOIN reservations res \n" +
+                    "           ON         res.room = b.roomcode \n" +
+                    "           GROUP BY   roomcode ), idealrooms AS \n" +
+                    "( \n" +
+                    "           SELECT     r.roomcode, \n" +
+                    "                      r.roomname, \n" +
+                    "                      r.baseprice, \n" +
+                    "                      ? AS startdate, \n" +
+                    "                      ? AS enddate \n" +
+                    "           FROM       decorcoderooms d \n" +
+                    "           INNER JOIN roomoverlap r \n" +
+                    "           ON         r.roomcode = d.roomcode \n" +
+                    "           WHERE      overlap <= 0 ), nonidealroomsnooverlap AS \n" +
+                    "( \n" +
+                    "           SELECT     r.roomcode, \n" +
+                    "                      r.roomname, \n" +
+                    "                      r.baseprice, \n" +
+                    "                      '2010-10-23' AS startdate, \n" +
+                    "                      '2010-10-25' AS enddate \n" +
+                    "           FROM       bigenoughrooms b \n" +
+                    "           INNER JOIN roomoverlap r \n" +
+                    "           ON         r.roomcode = b.roomcode \n" +
+                    "           WHERE      overlap <= 0 ) \n" +
+                    "( \n" +
+                    "       SELECT *, \n" +
+                    "              ( \n" +
+                    "                     SELECT Max(code) \n" +
+                    "                     FROM   reservations ) AS maxrescode \n" +
+                    "       FROM   idealrooms ) \n" +
+                    "UNION ALL \n" +
+                    "          ( \n" +
+                    "                 SELECT *, \n" +
+                    "                        ( \n" +
+                    "                               SELECT Max(code) \n" +
+                    "                               FROM   reservations ) AS maxrescode \n" +
+                    "                 FROM   nonidealroomsnooverlap ) \n" +
+                    "   UNION ALL \n" +
+                    "             ( \n" +
+                    "                        SELECT     roomcode, \n" +
+                    "                                   roomname, \n" +
+                    "                                   baseprice, \n" +
+                    "                                   Max(checkout)                                                                AS startdate,\n" +
+                    "                                   date_add( Max(checkout), interval datediff('2010-10-25', '2010-10-23') day ) AS enddate, \n" +
+                    "                                   ( \n" +
+                    "                                          SELECT max(code) \n" +
+                    "                                          FROM   reservations ) AS maxrescode \n" +
+                    "                        FROM       bigenoughrooms b \n" +
+                    "                        INNER JOIN reservations r \n" +
+                    "                        ON         r.room = b.roomcode \n" +
+                    "                        GROUP BY   roomcode ) limit 5;");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static Reservation getRequirement2Inputs() {
         Reservation res = new Reservation();
 
         Scanner reader = new Scanner (System.in);
-        String userInput;
-
-        System.out.println("Make a Reservation: ");
 
         while(true){
-            int input = Requirement2_helper(res);
+            int input = reservationEditor(res);
 
             switch(input){
                 case 1: //First Name, inputs(0)
@@ -241,17 +363,17 @@ public class InnReservations {
         }
     }
 
-    public static int Requirement2_helper(Reservation res){
+    public static int reservationEditor(Reservation res){
         int input = 0;
         Scanner reader = new Scanner (System.in);
 
-        System.out.println("Choose a feild to edit:");
+        System.out.println("Choose a field to edit:");
         System.out.printf("\t1: First Name: %s\n", res.getFirstName());
         System.out.printf("\t2: Last Name: %s\n", res.getLastName());
         System.out.printf("\t3: Desired Room: %s\n", res.room);
         System.out.printf("\t4: Desired Bed: %s\n", res.bed);
 
-        if(res.getCheckIn() == ""){
+        if(res.getCheckIn().equals("")){
             System.out.printf("\t5: Range of Dates: \n");
         }
         else{
