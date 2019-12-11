@@ -91,7 +91,7 @@ public class InnReservations {
                 "               Datediff(Max(checkout), Max(checkin)) AS latestDuration\n" +
                 "        FROM   lab7_reservations res\n" +
                 "        GROUP  BY room)\n" +
-                "SELECT roomId,\n" +
+                "SELECT roomCode,\n" +
                 "      roomName,\n" +
                 "      beds,\n" +
                 "      bedType,\n" +
@@ -104,14 +104,14 @@ public class InnReservations {
                 "      lastCheckout as lastCheckout\n" +
                 "FROM  lab7_rooms rooms\n" +
                 "      left outer join RoomPopularity rp\n" +
-                "              ON rp.room = rooms.roomId\n" +
+                "              ON rp.room = rooms.roomCode\n" +
                 "      left outer join RoomAvailability ra\n" +
                 "              ON rooms.roomId = ra.room\n" +
                 "      left outer join LatestDuration ld\n" +
-                "              ON ld.room = rooms.roomId\n" +
+                "              ON ld.room = rooms.roomCode\n" +
                 "ORDER  BY popularity DESC;";
 
-        System.out.printf("RoomId\t%-25sBeds\tBedType\tMaxOcc\tPrice\t%-15sPopularity\tNextCheckin\tLastStayLength\tLastCheckout\n",
+        System.out.printf("RoomCode\t%-25sBeds\tBedType\tMaxOcc\tPrice\t%-15sPopularity\tNextCheckin\tLastStayLength\tLastCheckout\n",
                 "RoomName", "Decor");
 
         try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
@@ -121,7 +121,7 @@ public class InnReservations {
             try(Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sqlStatement)){
                 while (rs.next()){
-                    String roomCode = rs.getString("roomId");
+                    String roomCode = rs.getString("roomCode");
                     String RoomName = rs.getString("roomName");
                     int roomBeds = rs.getInt("beds");
                     String bedType = rs.getString("bedType");
