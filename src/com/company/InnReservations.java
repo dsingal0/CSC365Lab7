@@ -206,8 +206,8 @@ public class InnReservations {
                             "  FROM \n" +
                             "    bigenoughrooms \n" +
                             "  WHERE \n" +
-                            "    roomcode LIKE '?' \n" +
-                            "    OR bedtype LIKE '?' \n" +
+                            "    roomcode LIKE ? \n" +
+                            "    OR bedtype LIKE ? \n" +
                             "), \n" +
                             "alloverlap AS (\n" +
                             "  SELECT \n" +
