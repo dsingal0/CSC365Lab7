@@ -361,7 +361,7 @@ public class InnReservations {
                 int basePrice = rs.getInt("basePrice");
                 Date startDate = rs.getDate("startdate");
                 Date endDate = rs.getDate("enddate");
-                int maxResCode = rs.getInt("maxRedCode");
+                int maxResCode = rs.getInt("maxResCode");
 
                 System.out.printf("%s\t%-25s%d\t%tF\t%tF\t%d\n",
                         roomCode,
