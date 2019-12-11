@@ -59,8 +59,7 @@ public class InnReservations {
     }
 
     private static void requirement1() {
-        String sqlStatement =
-                "WITH ThreeMonthOverlap\n" +
+        String sqlStatement = "WITH SixMonthOverlap\n" +
                 "    AS (SELECT code,\n" +
                 "               room,\n" +
                 "               rate,\n" +
@@ -79,14 +78,12 @@ public class InnReservations {
                 "    RoomPopularity\n" +
                 "    AS (SELECT room,\n" +
                 "               Round(SUM(overlap) / 180, 2) AS popularity\n" +
-                "        FROM   ThreeMonthOverlap t\n" +
+                "        FROM   SixMonthOverlap s\n" +
                 "        GROUP  BY room),\n" +
                 "    RoomAvailability\n" +
                 "    AS (SELECT room,\n" +
                 "               Greatest(curdate(), Max(checkout)) AS nextAvailableCheckin\n" +
                 "        FROM   reservations res\n" +
-                "        WHERE  checkin <= curdate()\n" +
-                "               AND checkout >= Date_sub(curdate(), interval 180 day)\n" +
                 "        GROUP  BY room),\n" +
                 "    LatestDuration\n" +
                 "    AS (SELECT room,\n" +
@@ -101,17 +98,17 @@ public class InnReservations {
                 "      maxOccupancy,\n" +
                 "      basePrice,\n" +
                 "      decor,\n" +
-                "      popularity,\n" +
+                "      IFNULL(popularity, 0) as popularity,\n" +
                 "      nextAvailableCheckin,\n" +
                 "      latestDuration as lastStayLength,\n" +
-                "      lastCheckout\n" +
-                "FROM  RoomPopularity rp\n" +
-                "      inner join rooms\n" +
+                "      lastCheckout as lastCheckout\n" +
+                "FROM  rooms\n" +
+                "      left outer join RoomPopularity rp\n" +
                 "              ON rp.room = rooms.roomId\n" +
-                "      inner join RoomAvailability ra\n" +
-                "              ON rp.room = ra.room\n" +
-                "      inner join LatestDuration ld\n" +
-                "              ON ld.room = ra.room\n" +
+                "      left outer join RoomAvailability ra\n" +
+                "              ON rooms.roomId = ra.room\n" +
+                "      left outer join LatestDuration ld\n" +
+                "              ON ld.room = rooms.roomId\n" +
                 "ORDER  BY popularity DESC;";
 
         System.out.printf("RoomId\t%-25sBeds\tBedType\tMaxOcc\tPrice\t%-15sPopularity\tNextCheckin\tLastStayLength\tLastCheckout\n",
