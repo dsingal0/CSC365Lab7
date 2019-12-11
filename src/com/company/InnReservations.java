@@ -114,7 +114,8 @@ public class InnReservations {
                 "              ON ld.room = ra.room\n" +
                 "ORDER  BY popularity DESC;";
 
-        System.out.println("RoomId\tRoomName\tBeds\tBedType\tMaxOccupancy\tBasePrice\tDecor\tPopularity\tNextAvailableCheckin\tLastStayLength\tLastCheckout");
+        System.out.printf("RoomId\t%-25sBeds\tBedType\tMaxOcc\tPrice\t%-15sPopularity\tNextCheckin\tLastStayLength\tLastCheckout\n",
+                "RoomName", "Decor");
 
         try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
                 System.getenv("APP_JDBC_USER"),
@@ -123,8 +124,6 @@ public class InnReservations {
             try(Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sqlStatement)){
                 while (rs.next()){
-                    System.out.println("RoomId\tRoomName\tBeds\tBedType\tMaxOccupancy\tBasePrice\tDecor\tPopularity\tNextAvailableCheckin\tLastStayLength\tLastCheckout");
-
                     String roomCode = rs.getString("roomId");
                     String RoomName = rs.getString("roomName");
                     int roomBeds = rs.getInt("beds");
@@ -139,7 +138,7 @@ public class InnReservations {
 
                     Rooms room = new Rooms(roomCode, RoomName, roomBeds, bedType, maxOccupancy, basePrice, decor);
 
-                    System.out.printf("%s\t%s\t%d\t%s\t%d\t%.2f\t%s\t%.2f\t%tD\t%d\t%tD\n",
+                    System.out.printf("%s\t%-25s%d\t%s\t%d\t%.2f\t%-15s%.2f\t\t%tF\t%d\t\t%tF\n",
                             room.getRoomCode(),
                             room.getRoomName(),
                             room.getBeds(),
