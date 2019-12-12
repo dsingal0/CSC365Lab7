@@ -1013,4 +1013,77 @@ public class InnReservations {
         }
     }
 
+    private static void requirement6() {
+
+        try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW"))) {
+
+            PreparedStatement statement = conn.prepareStatement(
+                    "with annualRevByRoom as (\n"+
+                            "  select \n"+
+                            "    res.room, \n"+
+                            "    sum(\n"+
+                            "      rate * datediff(checkout, checkin)\n"+
+                            "    ) as revenue \n"+
+                            "  from \n"+
+                            "    lab7_reservations res \n"+
+                            "  group by \n"+
+                            "    res.room\n"+
+                            ") \n"+
+                            "select \n"+
+                            "  code, \n"+
+                            "  res.room, \n"+
+                            "  checkin, \n"+
+                            "  checkout, \n"+
+                            "  rate, \n"+
+                            "  month(checkin) as checkinMonth, \n"+
+                            "  month(checkout) as checkoutMonth, \n"+
+                            "  datediff(checkout, checkin) as numDays, \n"+
+                            "  day(checkin) as dayOfMonthCheckin, \n"+
+                            "  day(checkout) as dayOfMonthCheckout, \n"+
+                            "  revenue as annualRevenue \n"+
+                            "from \n"+
+                            "  lab7_reservations res \n"+
+                            "  inner join annualRevByRoom a on a.room = res.room \n"+
+                            "order by \n"+
+                            "  res.room;");
+
+
+            ResultSet rs = statement.executeQuery();
+
+            System.out.print("ResCode\tRmCode\tCheckin\t\tCheckout\tRate\tcheckinMonth\tcheckouMonth\tnumDays\tdayCheckin\tdayCheckout\tTotal\n");
+
+            while (rs.next()){
+                String reservationCode = rs.getString("code");
+                String roomCode = rs.getString("res.room");
+                Date checkin = rs.getDate("checkin");
+                Date checkout = rs.getDate("checkout");
+                float basePrice = rs.getFloat("rate");
+                String checkinMonth = rs.getString("checkinMonth");
+                String checkoutMonth = rs.getString("checkoutMonth");
+                int days = rs.getInt("numDays");
+                int dayCheckin = rs.getInt("dayOfMonthCheckin");
+                int dayCheckout = rs.getInt("dayOfMonthCheckout");
+                float total = rs.getFloat("annualRevenue");
+
+                System.out.printf("%s\t%s\t%tF\t%tF\t%.2f\t%s\t%s\t%d\t%d\t%d\t%.2f\n",
+                        reservationCode,
+                        roomCode,
+                        checkin,
+                        checkout,
+                        basePrice,
+                        checkinMonth,
+                        checkoutMonth,
+                        days,
+                        dayCheckin,
+                        dayCheckout,
+                        total);
+            }
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
 }
