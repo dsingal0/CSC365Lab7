@@ -995,7 +995,7 @@ public class InnReservations {
                 int kids = rs.getInt("kids");
                 String roomName = rs.getString("roomname");
 
-                System.out.printf("%s\t%s\t%tF\t\t%tF\t\t%f\t%s\t%s\t%d\t%d\t%s\n",
+                System.out.printf("%s\t%s\t%tF\t%tF\t\t%.2f\t%s\t\t%s\t%d\t%d\t%s\n",
                         reservationCode,
                         roomCode,
                         checkin,
