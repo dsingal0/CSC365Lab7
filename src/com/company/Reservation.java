@@ -62,6 +62,10 @@ public class Reservation {
         return roomCode;
     }
 
+    public String getRoomName() {
+        return roomName;
+    }
+
     public String getCheckIn() {
         return checkIn;
     }

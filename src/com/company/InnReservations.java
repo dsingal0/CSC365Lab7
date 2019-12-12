@@ -1,8 +1,10 @@
 package com.company;
 
+import java.util.Date;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class InnReservations {
@@ -410,7 +412,7 @@ public class InnReservations {
 
                 possibleReservations[count-1] = res;
 
-                System.out.printf("%d\t%s\t%-25s%d\t%d\t%s\t%d%tF\t%tF\t%d\n",
+                System.out.printf("%d\t%s\t\t%-25s%d\t%d\t%s\t%d%tF\t%tF\t%d\n",
                         count,
                         roomCode,
                         roomName,
@@ -456,17 +458,112 @@ public class InnReservations {
                 }
 
                 if (!canceled) {
-                    System.out.printf("Going to add the reservation %d!\n", selectedOption);
+                    Reservation selected = possibleReservations[selectedOption];
 
-                    // add the reservation here
+                    PreparedStatement insertStatement = conn.prepareStatement(
+                    "insert into lab7_reservations(code, " +
+                            "room," +
+                            "checkin, " +
+                            "checkout, " +
+                            "rate, " +
+                            "lastname, " +
+                            "firstname, " +
+                            "adults, " +
+                            "kids) " +
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                    insertStatement.setInt(1, selected.getCode());
+                    insertStatement.setString(2, selected.getRoomCode());
+                    insertStatement.setString(3, selected.getCheckIn());
+                    insertStatement.setString(4, selected.getCheckOut());
+                    insertStatement.setFloat(5, selected.getRate());
+                    insertStatement.setString(6, selected.getLastName());
+                    insertStatement.setString(7, selected.getFirstName());
+                    insertStatement.setInt(8, selected.getAdult());
+                    insertStatement.setInt(9, selected.getKids());
+
+                    // Execute the insert statement
+                    insertStatement.execute();
+
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+                    Date checkIn = new Date();
+                    Date checkOut = new Date();
+
+                    try {
+                        checkIn = formatter.parse(selected.getCheckIn());
+                        checkOut = formatter.parse(selected.getCheckOut());
+                    } catch (Exception e) {
+                        // Dont care
+                    }
+
+
+                    double totalPrice =
+                            ((numWeekdays(checkIn, checkOut) * selected.getRate()) +
+                            (numWeekendDays(checkIn, checkOut) * selected.getRate() * 1.10))
+                             * 1.18;
+
+                    System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%f\n",
+                            selected.getFirstName(),
+                            selected.getLastName(),
+                            selected.getRoomCode(),
+                            selected.getRoomName(),
+                            selected.getBed(),
+                            selected.getCheckIn(),
+                            selected.getCheckOut(),
+                            selected.getAdult(),
+                            selected.getKids(),
+                            totalPrice);
+
+                    conn.close();
                 }
-
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public static int numWeekendDays(Date d1, Date d2) {
+        Calendar c1 = Calendar.getInstance();
+        c1.setTime(d1);
+
+        Calendar c2 = Calendar.getInstance();
+        c2.setTime(d2);
+
+        int numWeekendDays = 0;
+
+        while (! c1.after(c2)) {
+            if (c1.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ){
+                numWeekendDays++;
+            }
+            if(c1.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY){
+                numWeekendDays++;
+            }
+
+            c1.add(Calendar.DATE, 1);
+        }
+        return numWeekendDays;
+    }
+
+    public static int numWeekdays(Date d1, Date d2) {
+        Calendar c1 = Calendar.getInstance();
+        c1.setTime(d1);
+
+        Calendar c2 = Calendar.getInstance();
+        c2.setTime(d2);
+
+        int numWeekdays = 0;
+
+        while (! c1.after(c2)) {
+            if (c1.get(Calendar.DAY_OF_WEEK) >= Calendar.MONDAY && c1.get(Calendar.DAY_OF_WEEK) <= Calendar.FRIDAY){
+                numWeekdays++;
+            }
+
+            c1.add(Calendar.DATE, 1);
+        }
+
+        return numWeekdays;
     }
 
     public static Reservation getRequirement2Inputs() {
