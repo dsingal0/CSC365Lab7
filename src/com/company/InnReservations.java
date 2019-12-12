@@ -779,10 +779,10 @@ public class InnReservations {
         System.out.printf("\t1: First Name: %s\n", res.getFirstName());
         System.out.printf("\t2: Last Name: %s\n", res.getLastName());
         if(res.getCheckIn() == ""){
-            System.out.printf("\t5: Range of Dates: \n");
+            System.out.printf("\t3: Range of Dates: \n");
         }
         else{
-            System.out.printf("\t5: Range of Dates: %s - %s\n", res.getCheckIn(), res.getCheckOut());
+            System.out.printf("\t3: Range of Dates: %s - %s\n", res.getCheckIn(), res.getCheckOut());
         }
         System.out.printf("\t4: Number of Children: %d\n", res.getKids());
         System.out.printf("\t5: Number of Adults: %d\n", res.getAdult());
