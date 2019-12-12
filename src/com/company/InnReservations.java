@@ -476,7 +476,7 @@ public class InnReservations {
                 }
 
                 if (!canceled) {
-                    Reservation selected = possibleReservations[selectedOption];
+                    Reservation selected = possibleReservations[selectedOption - 1];
 
                     PreparedStatement insertStatement = conn.prepareStatement(
                     "insert into lab7_reservations(code, " +
