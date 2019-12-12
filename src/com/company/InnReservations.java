@@ -792,6 +792,7 @@ public class InnReservations {
         System.out.println("\t7: Cancel Changes");
         System.out.print("\nChoose which option to enter: ");
         try {
+            System.out.flush();
             input = reader.nextInt();
         } catch (Exception InputMismatchException) {
             System.out.println("Invalid Type");
