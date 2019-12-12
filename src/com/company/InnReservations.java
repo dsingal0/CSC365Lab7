@@ -392,7 +392,7 @@ public class InnReservations {
 
             ResultSet rs = statement.executeQuery();
 
-            System.out.printf("Option\tRoomCode\t%-25sPrice\tBeds\tBedType\tMaxOcc\tStartDate\t\tEndDate\tMaxResCode\n",
+            System.out.printf("Option\tRoomCode\t%-25sPrice\tBeds\tBedType\tMaxOcc\tStartDate\t\tEndDate\t\tMaxResCode\n",
                     "RoomName");
 
 
