@@ -63,6 +63,8 @@ public class InnReservations {
                     break;
                 case 5:
                     System.out.println("About Reservation");
+                    SearchParams sp = requirement5();
+                    execRequirement5(sp);
                     break;
                 case 6:
                     System.out.println("Inn Revenue");
@@ -867,6 +869,148 @@ public class InnReservations {
         }
 
         return false;
+    }
+
+    public static SearchParams requirement5(){
+        Scanner reader = new Scanner (System.in);
+
+        SearchParams sp = new SearchParams();
+
+        while(true){
+            int input = getRequirement5Inputs(sp);
+            switch(input){
+                case 1: //First Name, inputs(0)
+                    System.out.print("Enter a First Name: ");
+                    sp.firstName = reader.nextLine();
+                    break;
+                case 2: //Last Name, inputs(1)
+                    System.out.print("Enter a Last Name: ");
+                    sp.lastName = reader.nextLine();
+                    break;
+                case 3: //Date Range, Start Date = inputs(2), End Date = inputs(3)
+                    System.out.print("Enter a Start Date (YYYY-MM-DD): ");
+                    sp.checkInStartRange = reader.nextLine();
+                    System.out.print("Enter a End Date (YYYY-MM-DD): ");
+                    sp.checkInEndRange = reader.nextLine();
+                    if(checkDate(sp.checkInStartRange) || checkDate(sp.checkInEndRange)){
+                        sp.checkInStartRange = "1901-00-00";
+                        sp.checkInEndRange = "2155-00-00";
+                        System.out.println("Please enter the date in YYYY-MM-DD Format. Using defaults.");
+                    }
+                    break;
+                case 4: //Room Code,inputs(4)
+                    System.out.print("Enter the Room Code: ");
+                    sp.roomCode = reader.nextLine();
+                    break;
+                case 5: //Reservation Code,inputs(5)
+                    System.out.print("Enter the Reservation Code: ");
+                    sp.reservationCode = reader.nextLine();
+                    break;
+                case 6:
+                    return sp;
+                case 7:
+                    return null;
+            }
+        }
+    }
+    public static int getRequirement5Inputs(SearchParams sp){
+        int input = 0;
+        Scanner reader = new Scanner (System.in);
+        System.out.println("Choose a field to edit:");
+        System.out.printf("\t1: First Name: %s\n", sp.firstName);
+        System.out.printf("\t2: Last Name: %s\n", sp.lastName);
+        if(sp.checkInStartRange.isEmpty()){
+            System.out.printf("\t3: Range of Dates: \n");
+        }
+        else{
+            System.out.printf("\t3: Range of Dates: %s - %s\n", sp.checkInStartRange, sp.checkInEndRange);
+        }
+        System.out.printf("\t4: Room Code: %s\n", sp.roomCode);
+        System.out.printf("\t5: Reservation Code: %s\n", sp.reservationCode);
+        System.out.println("\t6: Confirm Search");
+        System.out.println("\t7: Cancel Search");
+        System.out.print("\nChoose which option to enter: ");
+        try {
+            input = reader.nextInt();
+
+            // Clear input buffer
+            reader.nextLine();
+        } catch (Exception InputMismatchException) {
+            System.out.println("Invalid Type");
+        }
+        return input;
+    }
+
+    private static void execRequirement5(SearchParams sp) {
+
+        try(Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW"))) {
+
+            PreparedStatement statement = conn.prepareStatement(
+                    "select \n" +
+                            "  code,\n" +
+                            "  room,\n" +
+                            "  checkin,\n" +
+                            "  checkout,\n" +
+                            "  rate,\n" +
+                            "  lastname,\n" +
+                            "  firstname,\n" +
+                            "  adults,\n" +
+                            "  kids,\n" +
+                            "  roomname\n" +
+                            "from \n" +
+                            "  lab7_reservations r \n" +
+                            "  inner join lab7_rooms rm on rm.roomcode = r.room \n" +
+                            "where \n" +
+                            "  r.firstname like ? \n" +
+                            "  and r.lastname like ? \n" +
+                            "  and r.code like ? \n" +
+                            "  and r.room like ? \n" +
+                            "  and r.checkin between ? \n" +
+                            "  and ?;");
+
+
+            statement.setString(1, sp.firstName);
+            statement.setString(2, sp.lastName);
+            statement.setString(3, sp.reservationCode);
+            statement.setString(4, sp.roomCode);
+            statement.setString(5, sp.checkInStartRange);
+            statement.setString(6, sp.checkInEndRange);
+
+
+            ResultSet rs = statement.executeQuery();
+
+            System.out.print("ResCode\tRmCode\tCheckin\t\tCheckout\t\tRate\tLastname\tFirstname\tAdults\tKids\tRoomname\n");
+
+            while (rs.next()){
+                String reservationCode = rs.getString("code");
+                String roomCode = rs.getString("room");
+                Date checkin = rs.getDate("checkin");
+                Date checkout = rs.getDate("checkout");
+                float basePrice = rs.getFloat("rate");
+                String lastName = rs.getString("lastname");
+                String firstname = rs.getString("firstname");
+                int adults = rs.getInt("adults");
+                int kids = rs.getInt("kids");
+                String roomName = rs.getString("roomname");
+
+                System.out.printf("%s\t%s\t%tF\t\t%tF\t\t%f\t%s\t%s\t%d\t%d\t%s\n",
+                        reservationCode,
+                        roomCode,
+                        checkin,
+                        checkout,
+                        basePrice,
+                        lastName,
+                        firstname,
+                        adults,
+                        kids,
+                        roomName);
+            }
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
 }
