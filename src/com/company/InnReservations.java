@@ -44,8 +44,12 @@ public class InnReservations {
                 case 3:
                     System.out.println("Change Reservation");
                     reservation = requirement3();
-                    execRequirement3(reservation);
-                    System.out.println("Reservation updated");
+
+                    if (execRequirement3(reservation)) {
+                        System.out.println("Reservation updated");
+                    } else {
+                        System.out.println("An error occurred updating the reservation");
+                    }
 
                     break;
                 case 4:
@@ -802,8 +806,10 @@ public class InnReservations {
             statement.setInt(6, res.getAdult());
             statement.setInt(7, res.getCode());
 
-            ResultSet result = statement.executeQuery();
-            return true;
+            int result = statement.executeUpdate();
+
+            // Check that we actually updated any rows
+            return result >= 1;
         }
         catch(SQLException e){
             System.err.println("SQLException: " + e.getMessage());
