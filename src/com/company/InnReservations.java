@@ -27,6 +27,8 @@ public class InnReservations {
             System.out.println("7: Exit");
             System.out.print("Please Choose an Option: ");
 
+            String sql = "";
+            Reservation reservation;
             selection = reader.nextInt();
 
             switch (selection)
@@ -41,6 +43,9 @@ public class InnReservations {
                     break;
                 case 3:
                     System.out.println("Change Reservation");
+                    reservation = requirement3();
+                    sql = construct_req3_sql_statement(reservation);
+                    execSql(sql);
                     break;
                 case 4:
                     System.out.println("Cancel Reservation");
@@ -59,6 +64,25 @@ public class InnReservations {
         }
     }
 
+
+    public static boolean execSql(String sql){
+        System.out.println("ExecSql " + sql);
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW"))) {
+            try (Statement stmt = conn.createStatement()) {
+                return stmt.execute(sql);
+            }
+            catch(SQLException e){
+                System.err.println("SQLException: " + e.getMessage());
+                return false;
+            }
+        }
+        catch(SQLException e){
+            System.err.println("SQLException: " + e.getMessage());
+            return false;
+        }
+    }
     private static void requirement1() {
         String sqlStatement = "WITH SixMonthOverlap\n" +
                 "    AS (SELECT code,\n" +
@@ -656,6 +680,132 @@ public class InnReservations {
         }
 
         return input;
+    }
+
+    //fetch a reservation based on reservation Code
+    public static Reservation fetch_res(int code){
+        Reservation res = new Reservation();
+        String sql = "SELECT * FROM lab7_reservations";
+        sql += " WHERE Code = " + code + ";";
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW"))) {
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(sql)) {
+                while(rs.next()){ // Only returns the last reservation in  a list
+                    res.code = rs.getInt("CODE");
+                    res.roomCode = rs.getString("Room");
+                    res.checkIn = rs.getString("CheckIn");
+                    res.checkOut = rs.getString("CheckOut");
+                    res.firstName = rs.getString("FirstName");
+                    res.lastName = rs.getString("LastName");
+                    res.adult = rs.getInt("Adults");
+                    res.kids = rs.getInt("Kids");
+                    res.rate = rs.getFloat("Rate");
+//				    System.out.format("%d %s %s %s %s %s %n", res.code, res.room, res.first, res.last, res.checkIn, res.checkOut);
+                }
+            }
+            catch(SQLException e){
+                System.err.println("SQLException: " + e.getMessage());
+                return null;
+            }
+        }
+        catch(SQLException e){
+            System.err.println("SQLException: " + e.getMessage());
+            return null;
+        }
+        return res;
+    }
+    /* Requirement 3
+     * Reservation Change
+     */
+    public static Reservation requirement3(){
+        Reservation res;
+        Scanner reader = new Scanner (System.in);
+        String userInput;
+        System.out.print("Please enter your reservation code to edit:");
+        int code = reader.nextInt();
+        res = fetch_res(code);
+        while(true){
+            int input = getRequirement3Inputs(res);
+            switch(input){
+                case 1: //First Name, inputs(0)
+                    System.out.print("Enter a First Name: ");
+                    res.firstName = reader.nextLine();
+                    break;
+                case 2: //Last Name, inputs(1)
+                    System.out.print("Enter a Last Name: ");
+                    res.lastName = reader.nextLine();
+                    break;
+                case 3: //Date Range, Start Date = inputs(2), End Date = inputs(3)
+                    System.out.print("Enter a Start Date (YYYY-MM-DD): ");
+                    res.checkIn = reader.nextLine();
+                    System.out.print("Enter a End Date (YYYY-MM-DD): ");
+                    res.checkOut = reader.nextLine();
+                    if(!checkDate(res.checkIn) || !checkDate(res.checkOut)){
+                        res.checkIn = "";
+                        res.checkOut = "";
+                        System.out.println("Please enter the date in YYYY-MM-DD Format");
+                    }
+                    break;
+                case 4: //Numebr of Children,inputs(4)
+                    System.out.print("Enter the number of Children: ");
+                    try {
+                        res.kids = reader.nextInt();
+                    } catch (Exception InputMismatchException) {
+                        System.out.println("Invalid Type");
+                    }
+                    break;
+                case 5: //Numebr of Adults,inputs(5)
+                    System.out.print("Enter the number of Adults: ");
+                    try {
+                        res.adult = reader.nextInt();
+                    } catch (Exception InputMismatchException) {
+                        System.out.println("Invalid Type");
+                    }
+                    break;
+                case 6:
+                    return res;
+                case 7:
+                    return null;
+            }
+        }
+    }
+    public static int getRequirement3Inputs(Reservation res){
+        int input = 0;
+        Scanner reader = new Scanner (System.in);
+        System.out.println("Choose a field to edit:");
+        System.out.printf("\tReservation: %d\n", res.getCode());
+        System.out.printf("\t1: First Name: %s\n", res.getFirstName());
+        System.out.printf("\t2: Last Name: %s\n", res.getLastName());
+        if(res.getCheckIn() == ""){
+            System.out.printf("\t5: Range of Dates: \n");
+        }
+        else{
+            System.out.printf("\t5: Range of Dates: %s - %s\n", res.getCheckIn(), res.getCheckOut());
+        }
+        System.out.printf("\t4: Number of Children: %d\n", res.getKids());
+        System.out.printf("\t5: Number of Adults: %d\n", res.getAdult());
+        System.out.println("\t6: Confirm Reservation");
+        System.out.println("\t7: Cancel Changes");
+        System.out.print("\nChoose which option to enter: ");
+        try {
+            input = reader.nextInt();
+        } catch (Exception InputMismatchException) {
+            System.out.println("Invalid Type");
+        }
+        return input;
+    }
+    public static String construct_req3_sql_statement(Reservation res){
+        String statement = "UPDATE lab7_reservations SET ";
+        statement += "FirstName = '" + res.getFirstName() + "', ";
+        statement += "LastName = '" + res.getLastName() + "', ";
+        statement += "CheckIn = '" + res.getCheckIn() + "', ";
+        statement += "CheckOut = '" + res.getCheckOut() + "', ";
+        statement += "Kids = " + res.getKids() + ", ";
+        statement += "Adults = " + res.getAdult();
+        statement += " WHERE Code = " + res.getCode();
+        return statement + ";";
     }
 
 }
