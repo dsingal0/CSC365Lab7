@@ -45,7 +45,9 @@ public class InnReservations {
                     System.out.println("Change Reservation");
                     reservation = requirement3();
                     sql = construct_req3_sql_statement(reservation);
-                    execSql(sql);
+                    if (execSql(sql)) {
+                        System.out.println("Reservation updated");
+                    }
                     break;
                 case 4:
                     System.out.println("Cancel Reservation");
@@ -66,7 +68,7 @@ public class InnReservations {
 
 
     public static boolean execSql(String sql){
-        System.out.println("ExecSql " + sql);
+        //System.out.println("ExecSql " + sql);
         try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
                 System.getenv("APP_JDBC_USER"),
                 System.getenv("APP_JDBC_PW"))) {
@@ -742,7 +744,7 @@ public class InnReservations {
                     res.checkIn = reader.nextLine();
                     System.out.print("Enter a End Date (YYYY-MM-DD): ");
                     res.checkOut = reader.nextLine();
-                    if(!checkDate(res.checkIn) || !checkDate(res.checkOut)){
+                    if(checkDate(res.checkIn) || checkDate(res.checkOut)){
                         res.checkIn = "";
                         res.checkOut = "";
                         System.out.println("Please enter the date in YYYY-MM-DD Format");
