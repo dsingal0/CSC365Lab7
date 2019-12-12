@@ -195,7 +195,9 @@ public class InnReservations {
                             "      roomname, \n" +
                             "      baseprice, \n" +
                             "      decor, \n" +
-                            "      bedtype \n" +
+                            "      beds, \n" +
+                            "      bedtype, \n" +
+                            "      maxOcc \n" +
                             "    FROM \n" +
                             "      lab7_rooms r \n" +
                             "    WHERE \n" +
@@ -218,6 +220,9 @@ public class InnReservations {
                             "    checkin, \n" +
                             "    checkout, \n" +
                             "    baseprice, \n" +
+                            "    beds, \n" +
+                            "    bedtype, \n" +
+                            "    maxOcc, \n" +
                             "    Least(\n" +
                             "      Datediff(checkout, checkin), \n" +
                             "      Datediff(checkout, ?), \n" +
@@ -233,6 +238,9 @@ public class InnReservations {
                             "    roomcode, \n" +
                             "    roomname, \n" +
                             "    baseprice, \n" +
+                            "    beds, \n" +
+                            "    bedtype, \n" +
+                            "    maxOcc, \n" +
                             "    Max(\n" +
                             "      Least(\n" +
                             "        Datediff(checkout, checkin), \n" +
@@ -252,6 +260,9 @@ public class InnReservations {
                             "    r.roomcode, \n" +
                             "    r.roomname, \n" +
                             "    r.baseprice, \n" +
+                            "    r.beds, \n" +
+                            "    r.bedtype, \n" +
+                            "    r.maxOcc, \n" +
                             "    ? AS startdate, \n" +
                             "    ? AS enddate \n" +
                             "  FROM \n" +
@@ -265,6 +276,9 @@ public class InnReservations {
                             "    r.roomcode, \n" +
                             "    r.roomname, \n" +
                             "    r.baseprice, \n" +
+                            "    r.beds, \n" +
+                            "    r.bedtype, \n" +
+                            "    r.maxOcc, \n" +
                             "    ? AS startdate, \n" +
                             "    ? AS enddate \n" +
                             "  FROM \n" +
