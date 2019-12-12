@@ -798,7 +798,6 @@ public class InnReservations {
             statement.setString(2, res.getLastName());
             statement.setString(3, res.getCheckIn());
             statement.setString(3, res.getCheckOut());
-            statement.setString(5, res.getFirstName());
             statement.setInt(6, res.getKids());
             statement.setInt(7, res.getAdult());
             statement.setInt(8, res.getCode());
