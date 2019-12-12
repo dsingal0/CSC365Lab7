@@ -68,6 +68,7 @@ public class InnReservations {
                     break;
                 case 6:
                     System.out.println("Inn Revenue");
+                    requirement6();
                     break;
                 case 7:
                     System.out.println("Thank you! Come Back Again");
