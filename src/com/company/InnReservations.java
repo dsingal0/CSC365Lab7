@@ -981,7 +981,7 @@ public class InnReservations {
 
             ResultSet rs = statement.executeQuery();
 
-            System.out.print("ResCode\tRmCode\tCheckin\t\tCheckout\t\tRate\tLastname\tFirstname\tAdults\tKids\tRoomname\n");
+            System.out.print("ResCode\tRmCode\tCheckin\t\tCheckout\tRate\tLastname\tFirstname\tAdults\tKids\tRoomname\n");
 
             while (rs.next()){
                 String reservationCode = rs.getString("code");
@@ -995,7 +995,7 @@ public class InnReservations {
                 int kids = rs.getInt("kids");
                 String roomName = rs.getString("roomname");
 
-                System.out.printf("%s\t%s\t%tF\t%tF\t\t%.2f\t%s\t\t%s\t%d\t%d\t%s\n",
+                System.out.printf("%s\t%s\t%tF\t%tF\t%.2f\t%-10s\t%-10s\t%d\t%d\t%s\n",
                         reservationCode,
                         roomCode,
                         checkin,
