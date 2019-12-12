@@ -797,10 +797,10 @@ public class InnReservations {
             statement.setString(1, res.getFirstName());
             statement.setString(2, res.getLastName());
             statement.setString(3, res.getCheckIn());
-            statement.setString(3, res.getCheckOut());
-            statement.setInt(6, res.getKids());
-            statement.setInt(7, res.getAdult());
-            statement.setInt(8, res.getCode());
+            statement.setString(4, res.getCheckOut());
+            statement.setInt(5, res.getKids());
+            statement.setInt(6, res.getAdult());
+            statement.setInt(7, res.getCode());
 
             ResultSet result = statement.executeQuery();
             return true;
