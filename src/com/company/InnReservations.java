@@ -44,10 +44,9 @@ public class InnReservations {
                 case 3:
                     System.out.println("Change Reservation");
                     reservation = requirement3();
-                    sql = construct_req3_sql_statement(reservation);
-                    if (execSql(sql)) {
-                        System.out.println("Reservation updated");
-                    }
+                    execRequirement3(reservation);
+                    System.out.println("Reservation updated");
+
                     break;
                 case 4:
                     System.out.println("Cancel Reservation");
@@ -66,25 +65,6 @@ public class InnReservations {
         }
     }
 
-
-    public static boolean execSql(String sql){
-        //System.out.println("ExecSql " + sql);
-        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
-                System.getenv("APP_JDBC_USER"),
-                System.getenv("APP_JDBC_PW"))) {
-            try (Statement stmt = conn.createStatement()) {
-                return stmt.execute(sql);
-            }
-            catch(SQLException e){
-                System.err.println("SQLException: " + e.getMessage());
-                return false;
-            }
-        }
-        catch(SQLException e){
-            System.err.println("SQLException: " + e.getMessage());
-            return false;
-        }
-    }
     private static void requirement1() {
         String sqlStatement = "WITH SixMonthOverlap\n" +
                 "    AS (SELECT code,\n" +
@@ -792,23 +772,44 @@ public class InnReservations {
         System.out.println("\t7: Cancel Changes");
         System.out.print("\nChoose which option to enter: ");
         try {
-            System.out.flush();
             input = reader.nextInt();
         } catch (Exception InputMismatchException) {
             System.out.println("Invalid Type");
         }
         return input;
     }
-    public static String construct_req3_sql_statement(Reservation res){
-        String statement = "UPDATE lab7_reservations SET ";
-        statement += "FirstName = '" + res.getFirstName() + "', ";
-        statement += "LastName = '" + res.getLastName() + "', ";
-        statement += "CheckIn = '" + res.getCheckIn() + "', ";
-        statement += "CheckOut = '" + res.getCheckOut() + "', ";
-        statement += "Kids = " + res.getKids() + ", ";
-        statement += "Adults = " + res.getAdult();
-        statement += " WHERE Code = " + res.getCode();
-        return statement + ";";
+
+    public static boolean execRequirement3(Reservation res){
+        try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                System.getenv("APP_JDBC_USER"),
+                System.getenv("APP_JDBC_PW"))) {
+
+            PreparedStatement statement = conn.prepareStatement(
+                    "UPDATE lab7_reservations SET " +
+                            "FirstName = ?, " +
+                            "LastName = ?, " +
+                            "CheckIn = ?, " +
+                            "CheckOut = ?, " +
+                            "Kids = ?, " +
+                            "Adults = ? " +
+                            "WHERE Code = ?");
+
+            statement.setString(1, res.getFirstName());
+            statement.setString(2, res.getLastName());
+            statement.setString(3, res.getCheckIn());
+            statement.setString(3, res.getCheckOut());
+            statement.setString(5, res.getFirstName());
+            statement.setInt(6, res.getKids());
+            statement.setInt(7, res.getAdult());
+            statement.setInt(8, res.getCode());
+
+            ResultSet result = statement.executeQuery();
+            return true;
+        }
+        catch(SQLException e){
+            System.err.println("SQLException: " + e.getMessage());
+            return false;
+        }
     }
 
 }
