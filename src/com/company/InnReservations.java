@@ -54,6 +54,11 @@ public class InnReservations {
                     break;
                 case 4:
                     System.out.println("Cancel Reservation");
+                    if (requirement4()) {
+                        System.out.println("Reservation cancelled");
+                    } else {
+                        System.out.println("An error occurred canceling the reservation");
+                    }
                     break;
                 case 5:
                     System.out.println("About Reservation");
@@ -815,6 +820,44 @@ public class InnReservations {
             System.err.println("SQLException: " + e.getMessage());
             return false;
         }
+    }
+
+    // Requirement 4
+    public static boolean requirement4(){
+        Scanner reader = new Scanner (System.in);
+
+        System.out.print("Please enter your reservation code to cancel: ");
+        int code = reader.nextInt();
+
+        System.out.print("Please enter YES to confirm you want to delete the reservation: ");
+        String confirm = reader.nextLine();
+
+        if (confirm.equals("YES")) {
+            try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
+                    System.getenv("APP_JDBC_USER"),
+                    System.getenv("APP_JDBC_PW"))) {
+
+
+                PreparedStatement statement = conn.prepareStatement(
+                        "DELETE FROM lab7_reservations " +
+                                "WHERE Code = ?");
+                statement.setInt(1, code);
+                int result = statement.executeUpdate();
+
+                if (result >= 1) {
+                    System.out.println("Successfully canceled the reservation");
+                    return true;
+                } else {
+                    System.out.println("No reservation was found with that code");
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        return false;
     }
 
 }
