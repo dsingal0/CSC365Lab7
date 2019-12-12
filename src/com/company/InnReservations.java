@@ -1053,7 +1053,7 @@ public class InnReservations {
 
             ResultSet rs = statement.executeQuery();
 
-            System.out.print("ResCode\tRmCode\tCheckin\t\tCheckout\tRate\tcheckinMonth\tcheckouMonth\tnumDays\tdayCheckin\tdayCheckout\tTotal\n");
+            System.out.print("ResCode\tRmCode\tCheckin\t\tCheckout\tRate\tinMonth\toMonth\tnumDays\tinDay\toutDay\tTotal\n");
 
             while (rs.next()){
                 String reservationCode = rs.getString("code");
