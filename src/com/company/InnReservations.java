@@ -373,7 +373,7 @@ public class InnReservations {
 
             ResultSet rs = statement.executeQuery();
 
-            System.out.printf("Option\tRoomCode\t%-25sPrice\tBeds\tBedType\tMaxOcc\tStartDate\tEndDate\tMaxResCode\n",
+            System.out.printf("Option\tRoomCode\t%-25sPrice\tBeds\tBedType\tMaxOcc\tStartDate\t\tEndDate\tMaxResCode\n",
                     "RoomName");
 
 
@@ -501,16 +501,16 @@ public class InnReservations {
                             (numWeekendDays(checkIn, checkOut) * selected.getRate() * 1.10))
                              * 1.18;
 
-                    System.out.println("Reservation Confirmation\n");
-                    System.out.printf("Name:       %s %s\n", selected.getFirstName(), selected.getLastName());
-                    System.out.printf("Room Code:  %s\n", selected.getRoomCode());
-                    System.out.printf("Room Name:  %s\n", selected.getRoomName());
-                    System.out.printf("Bed Type:   %s\n", selected.getBed());
-                    System.out.printf("Num Adults: %d\n", selected.getAdult());
-                    System.out.printf("Num Kids:   %d\n", selected.getKids());
-                    System.out.printf("Check in:  %s\n", selected.getCheckIn());
-                    System.out.printf("Check in:   %s\n", selected.getCheckOut());
-                    System.out.printf("Total cost: $%.2f\n", totalPrice);
+                    System.out.println("\n\nReservation Confirmation");
+                    System.out.printf("Name:       \t%s %s\n", selected.getFirstName(), selected.getLastName());
+                    System.out.printf("Room Code:  \t%s\n", selected.getRoomCode());
+                    System.out.printf("Room Name:  \t%s\n", selected.getRoomName());
+                    System.out.printf("Bed Type:   \t%s\n", selected.getBed());
+                    System.out.printf("Num Adults: \t%d\n", selected.getAdult());
+                    System.out.printf("Num Kids:   \t%d\n", selected.getKids());
+                    System.out.printf("Check in:   \t%s\n", selected.getCheckIn());
+                    System.out.printf("Check in:   \t%s\n", selected.getCheckOut());
+                    System.out.printf("Total cost: \t$%.2f\n\n", totalPrice);
 
                     conn.close();
                 }
