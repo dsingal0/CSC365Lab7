@@ -17,7 +17,7 @@ public class InnReservations {
         int selection = 0;
         while (selection != -1)
         {
-            System.out.println("Inn Reservation Manager: ");
+            System.out.println("\n\nInn Reservation Manager: ");
             System.out.println("1: Rooms and Rates");
             System.out.println("2: Make a Reservation");
             System.out.println("3: Change Reservation");
@@ -57,9 +57,7 @@ public class InnReservations {
                     break;
                 case 4:
                     System.out.println("Cancel Reservation");
-                    if (requirement4()) {
-                        System.out.println("Reservation cancelled");
-                    } else {
+                    if (!requirement4()) {
                         System.out.println("An error occurred canceling the reservation");
                     }
                     break;
