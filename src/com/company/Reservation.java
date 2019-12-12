@@ -4,7 +4,8 @@ import java.sql.*;
 
 public class Reservation {
     public int code;
-    public String room;
+    public String roomCode;
+    public String roomName;
     public String checkIn;
     public String checkOut;
     public float rate;
@@ -12,13 +13,12 @@ public class Reservation {
     public String firstName;
     public int adult;
     public int kids;
-    public float coast;
     public String bed;
-
 
     public Reservation() {
         this.code = -1;
-        this.room = "";
+        this.roomCode = "";
+        this.roomName = "";
         this.checkIn = "";
         this.checkOut = "";
         this.rate = -1;
@@ -26,16 +26,40 @@ public class Reservation {
         this.firstName = "";
         this.adult = 0;
         this.kids = 0;
-        this.coast = -1;
         this.bed = "";
+    }
+
+    public Reservation(int resCode,
+                       String roomCode,
+                       String roomName,
+                       float rate,
+                       String checkIn,
+                       String checkOut,
+                       String lastName,
+                       String firstName,
+                       int numAdults,
+                       int numKids,
+                       String bedType ) {
+
+        this.code = resCode;
+        this.roomCode = roomCode;
+        this.roomName = roomName;
+        this.rate = rate;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.adult = numAdults;
+        this.kids = numKids;
+        this.bed = bedType;
     }
 
     public int getCode() {
         return code;
     }
 
-    public String getRoom() {
-        return room;
+    public String getRoomCode() {
+        return roomCode;
     }
 
     public String getCheckIn() {
@@ -64,10 +88,6 @@ public class Reservation {
 
     public int getKids() {
         return kids;
-    }
-
-    public float getCoast() {
-        return coast;
     }
 
     public String getBed() {

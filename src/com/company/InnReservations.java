@@ -1,6 +1,8 @@
 package com.company;
 
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 public class InnReservations {
@@ -175,9 +177,9 @@ public class InnReservations {
     public static void requirement2() {
         System.out.println("Make a Reservation: ");
 
-        Reservation res = getRequirement2Inputs();
+        Reservation resRequestInfo = getRequirement2Inputs();
 
-        if (res == null) {
+        if (resRequestInfo == null) {
             return;
         }
 
@@ -301,6 +303,9 @@ public class InnReservations {
                             "      roomcode, \n" +
                             "      roomname, \n" +
                             "      baseprice, \n" +
+                            "      beds, \n" +
+                            "      bedtype, \n" +
+                            "      maxocc, \n" +
                             "      Max(checkout) AS startdate, \n" +
                             "      date_add(\n" +
                             "        Max(checkout), \n" +
@@ -320,11 +325,11 @@ public class InnReservations {
                             "  ) \n" +
                             "limit 5;"
             );
-            statement.setInt(1, res.getAdult());
-            statement.setInt(2, res.getKids());
+            statement.setInt(1, resRequestInfo.getAdult());
+            statement.setInt(2, resRequestInfo.getKids());
 
-            String room = res.getRoom();
-            String bedType = res.getBed();
+            String room = resRequestInfo.getRoomCode();
+            String bedType = resRequestInfo.getBed();
             statement.setString(3, room.isEmpty() ? "%" : room);
             statement.setString(4, bedType.isEmpty() ? "%" : bedType);
 
@@ -332,44 +337,116 @@ public class InnReservations {
             //java.util.Date checkIn = formatter.parse(res.getCheckIn());
 
 
-            statement.setString(5, res.getCheckIn());
-            statement.setString(6, res.getCheckOut());
-            statement.setString(7, res.getCheckOut());
-            statement.setString(8, res.getCheckIn());
-            statement.setString(9, res.getCheckIn());
-            statement.setString(10, res.getCheckOut());
-            statement.setString(11, res.getCheckOut());
-            statement.setString(12, res.getCheckIn());
+            statement.setString(5, resRequestInfo.getCheckIn());
+            statement.setString(6, resRequestInfo.getCheckOut());
+            statement.setString(7, resRequestInfo.getCheckOut());
+            statement.setString(8, resRequestInfo.getCheckIn());
+            statement.setString(9, resRequestInfo.getCheckIn());
+            statement.setString(10, resRequestInfo.getCheckOut());
+            statement.setString(11, resRequestInfo.getCheckOut());
+            statement.setString(12, resRequestInfo.getCheckIn());
 
-            statement.setString(13, res.getCheckIn());
-            statement.setString(14, res.getCheckOut());
+            statement.setString(13, resRequestInfo.getCheckIn());
+            statement.setString(14, resRequestInfo.getCheckOut());
 
-            statement.setString(15, res.getCheckIn());
-            statement.setString(16, res.getCheckOut());
+            statement.setString(15, resRequestInfo.getCheckIn());
+            statement.setString(16, resRequestInfo.getCheckOut());
 
-            statement.setString(17, res.getCheckOut());
-            statement.setString(18, res.getCheckIn());
+            statement.setString(17, resRequestInfo.getCheckOut());
+            statement.setString(18, resRequestInfo.getCheckIn());
 
             ResultSet rs = statement.executeQuery();
 
-            System.out.printf("RoomCode\t%-25sPrice\tStartDate\tEndDate\tMaxResCode\n",
+            System.out.printf("Option\tRoomCode\t%-25sPrice\tBeds\tBedType\tMaxOcc\tStartDate\tEndDate\tMaxResCode\n",
                     "RoomName");
 
+
+            Reservation possibleReservations[] = new Reservation[5];
+
+            int count = 0;
+
             while(rs.next()) {
+                count = count + 1;
+
                 String roomCode = rs.getString("roomCode");
                 String roomName = rs.getString("roomName");
                 int basePrice = rs.getInt("basePrice");
+                int roomBeds = rs.getInt("beds");
+                String roomBedType = rs.getString("bedType");
+                int maxOccupancy = rs.getInt("maxOcc");
                 Date startDate = rs.getDate("startdate");
                 Date endDate = rs.getDate("enddate");
                 int maxResCode = rs.getInt("maxResCode");
 
-                System.out.printf("%s\t%-25s%d\t%tF\t%tF\t%d\n",
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                String checkIn = df.format(startDate);
+                String checkOut = df.format(endDate);
+
+                Reservation res = new Reservation(maxResCode+1,
                         roomCode,
                         roomName,
                         basePrice,
+                        checkIn,
+                        checkOut,
+                        resRequestInfo.lastName,
+                        resRequestInfo.firstName,
+                        resRequestInfo.adult,
+                        resRequestInfo.kids,
+                        roomBedType);
+
+                possibleReservations[count-1] = res;
+
+                System.out.printf("%d\t%s\t%-25s%d\t%d\t%s\t%d%tF\t%tF\t%d\n",
+                        count,
+                        roomCode,
+                        roomName,
+                        basePrice,
+                        roomBeds,
+                        roomBedType,
+                        maxOccupancy,
                         startDate,
                         endDate,
                         maxResCode);
+            }
+
+            if (count == 0) {
+                System.out.println("no suitable rooms are available");
+            } else {
+                Scanner reader = new Scanner (System.in);
+                System.out.print("Please select an option from above to book: ");
+
+                int selectedOption;
+
+                boolean canceled = false;
+
+                while (true) {
+                    selectedOption = -1;
+
+                    System.out.print("Please select an option from above to reserve, or type 'Cancel' to exit: ");
+                    String input = reader.nextLine();
+
+                    if (input.equals("Cancel")) {
+                        canceled = true;
+                        break;
+                    }
+
+                    try {
+                        selectedOption = Integer.parseInt(input);
+                    } catch (Exception e) {
+                        System.out.println("Invalid input provided, enter a reservation number or Cancel to exit");
+                    }
+
+                    if (selectedOption >= 1 && selectedOption <= 5) {
+                        break;
+                    }
+                }
+
+                if (!canceled) {
+                    System.out.printf("Going to add the reservation %d!\n", selectedOption);
+
+                    // add the reservation here
+                }
+
             }
 
         } catch (SQLException e) {
@@ -397,7 +474,7 @@ public class InnReservations {
                     break;
                 case 3: //Desired Room
                     System.out.print("Enter a Desired Room: ");
-                    res.room = reader.nextLine();
+                    res.roomCode = reader.nextLine();
                     break;
                 case 4: //Desired Bed
                     System.out.print("Enter a Desired Bed: ");
@@ -448,8 +525,8 @@ public class InnReservations {
         System.out.println("Choose a field to edit:");
         System.out.printf("\t1: First Name: %s\n", res.getFirstName());
         System.out.printf("\t2: Last Name: %s\n", res.getLastName());
-        System.out.printf("\t3: Desired Room: %s\n", res.room);
-        System.out.printf("\t4: Desired Bed: %s\n", res.bed);
+        System.out.printf("\t3: Desired Room: %s\n", res.getRoomCode());
+        System.out.printf("\t4: Desired Bed: %s\n", res.getBed());
 
         if(res.getCheckIn().equals("")){
             System.out.printf("\t5: Range of Dates: \n");
