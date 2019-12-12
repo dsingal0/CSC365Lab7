@@ -62,38 +62,4 @@ public class Rooms {
     public String getDecor() {
         return decor;
     }
-
-    public float getPopularity(){
-        if(this.popularity != 0)
-        {
-            return this.popularity;
-        }
-        else {
-            String sql = "select roomName, (Sum(DATEDIFF(checkout,checkin))/180) as popular" +
-                    "from rooms join reservations res on rooms.RoomCode = res.room" +
-                    "where DATEDIFF(CURDATE(),checkin)<180 and roomName = " +this.RoomName+
-                    "GROUP BY roomName;";
-
-            try (Connection conn = DriverManager.getConnection(System.getenv("APP_JDBC_URL"),
-                    System.getenv("APP_JDBC_USER"),
-                    System.getenv("APP_JDBC_PW"))) {
-
-                try (Statement stmt = conn.createStatement();
-                     ResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
-
-                        this.popularity=rs.getFloat("popular");
-
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    return 0;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return 0;
-            }
-        }
-        return this.popularity;
-    }
 }
