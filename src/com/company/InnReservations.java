@@ -412,7 +412,7 @@ public class InnReservations {
 
                 possibleReservations[count-1] = res;
 
-                System.out.printf("%d\t%s\t\t%-25s%d\t%d\t%s\t%d%tF\t%tF\t%d\n",
+                System.out.printf("%d\t%s\t\t%-25s%d\t%d\t%s\t%d\t%tF\t\t%tF\t%d\n",
                         count,
                         roomCode,
                         roomName,
@@ -429,7 +429,6 @@ public class InnReservations {
                 System.out.println("no suitable rooms are available");
             } else {
                 Scanner reader = new Scanner (System.in);
-                System.out.print("Please select an option from above to book: ");
 
                 int selectedOption;
 
@@ -497,23 +496,21 @@ public class InnReservations {
                         // Dont care
                     }
 
-
                     double totalPrice =
                             ((numWeekdays(checkIn, checkOut) * selected.getRate()) +
                             (numWeekendDays(checkIn, checkOut) * selected.getRate() * 1.10))
                              * 1.18;
 
-                    System.out.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%f\n",
-                            selected.getFirstName(),
-                            selected.getLastName(),
-                            selected.getRoomCode(),
-                            selected.getRoomName(),
-                            selected.getBed(),
-                            selected.getCheckIn(),
-                            selected.getCheckOut(),
-                            selected.getAdult(),
-                            selected.getKids(),
-                            totalPrice);
+                    System.out.println("Reservation Confirmation\n");
+                    System.out.printf("Name:       %s %s\n", selected.getFirstName(), selected.getLastName());
+                    System.out.printf("Room Code:  %s\n", selected.getRoomCode());
+                    System.out.printf("Room Name:  %s\n", selected.getRoomName());
+                    System.out.printf("Bed Type:   %s\n", selected.getBed());
+                    System.out.printf("Num Adults: %d\n", selected.getAdult());
+                    System.out.printf("Num Kids:   %d\n", selected.getKids());
+                    System.out.printf("Check in:  %s\n", selected.getCheckIn());
+                    System.out.printf("Check in:   %s\n", selected.getCheckOut());
+                    System.out.printf("Total cost: $%.2f\n", totalPrice);
 
                     conn.close();
                 }
