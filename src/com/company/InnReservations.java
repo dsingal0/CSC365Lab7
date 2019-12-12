@@ -31,6 +31,9 @@ public class InnReservations {
             Reservation reservation;
             selection = reader.nextInt();
 
+            // Skip the newline
+            reader.nextLine();
+
             switch (selection)
             {
                 case 1:
@@ -666,6 +669,8 @@ public class InnReservations {
         System.out.print("\nChoose which option to enter: ");
         try {
             input = reader.nextInt();
+            // Skip the newline
+            reader.nextLine();
         } catch (Exception InputMismatchException) {
             System.out.println("Invalid Type");
         }
@@ -713,9 +718,12 @@ public class InnReservations {
     public static Reservation requirement3(){
         Reservation res;
         Scanner reader = new Scanner (System.in);
-        String userInput;
+
         System.out.print("Please enter your reservation code to edit:");
         int code = reader.nextInt();
+        // Skip the newline
+        reader.nextLine();
+
         res = fetch_res(code);
         while(true){
             int input = getRequirement3Inputs(res);
@@ -828,6 +836,9 @@ public class InnReservations {
 
         System.out.print("Please enter your reservation code to cancel: ");
         int code = reader.nextInt();
+
+        // Skip the newline
+        reader.nextLine();
 
         System.out.print("Please enter YES to confirm you want to delete the reservation: ");
         String confirm = reader.nextLine();
