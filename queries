@@ -264,5 +264,62 @@ set
 where 
   code = 99863;
 
+FR5: 
+-- replace the the ‘%’ with ‘GL%’ if the user wants the attribute like. If the user leaves the selection attribute empty, keep the ‘%’
+-- for dates, mysql min date is 1901 and max date is 2155. For date ranges for the user, replace ‘1901-00-00’ with startDate, and ‘2155-00-00’ with endDate. If any of the dates aren’t provided by the user, keep the default value of ‘1901-00-00’ and ‘2155-00-00’
+
+select 
+  * 
+from 
+  reservations r 
+  inner join rooms rm on rm.roomcode = r.room 
+where 
+  r.firstname like '%' 
+  and r.lastname like '%' 
+  and r.code like '%' 
+  and r.room like '%' 
+  and r.checkin between '1901-00-00' 
+  and '2155-00-00';
+
+FR6:
+--the annualRevenue column is the annual cumulative revenue from the room throughout the year
+-- to get the revenue by month, use the checkinMonth and checkoutMonth.
+-- checkinMonth and checkoutMonth are month numbers: eg January is 1
+-- dayOfMonthCheckin and dayOfMonthCheckout are days of the month, eg 19 for 2010-10-19
+-- if checkinMonth==checkoutMonth: revenue for all other months is 0, and the revenue for checkinMonth is numDays*rate
+-- if checkinMonth !=checkoutMonth: revenue for checkinMonth is 
+(number of days in checkinMonth-dayofMonthCheckin)*rate,
+revenue for checkoutMonth is
+(number of days in checkoutMonth-dayofMonthCheckout)*rate,
+and if checkoutMonth-checkinMonth>1: then the revenue for all the months in between is going to be (number of days in the month)*rate
+
+with annualRevByRoom as (
+  select 
+    res.room, 
+    sum(
+      rate * datediff(checkout, checkin)
+    ) as revenue 
+  from 
+    reservations res 
+  group by 
+    res.room
+) 
+select 
+  code, 
+  res.room, 
+  checkin, 
+  checkout, 
+  rate, 
+  month(checkin) as checkinMonth, 
+  month(checkout) as checkoutMonth, 
+  datediff(checkout, checkin) as numDays, 
+  day(checkin) as dayOfMonthCheckin, 
+  day(checkout) as dayOfMonthCheckout, 
+  revenue as annualRevenue 
+from 
+  reservations res 
+  inner join annualRevByRoom a on a.room = res.room 
+order by 
+  res.room;
 
 
